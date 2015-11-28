@@ -16,39 +16,47 @@ public class ArtistSearch {
     private static final String METHOD = "method";
     private static final String ARTIST = "artist";
 
-    private ArtistInterface apiService;
     private Map<String, String> queryMap;
-    private String artist;
 
-    public ArtistSearch(String artist){
-        this.artist = artist;
-    }
+    LastfmInterface lastfmInterface;
+    Retrofit retrofit;
 
-    private void setupRetrofit(ArtistMethod method){
-        Retrofit retrofit = new ArtistRetrofitFactory().createService(method);
-        apiService = retrofit.create(ArtistInterface.class);
+    public ArtistSearch(LastfmInterface lastfmInterface, Retrofit retrofit){
+        this.lastfmInterface = lastfmInterface;
+        this.retrofit = retrofit;
         queryMap = new HashMap<>();
+    }
+
+    public Call<List<Artist>> getSearchResults(String artist) {
         queryMap.put(ARTIST, artist);
-        queryMap.put(METHOD, method.getName());
-    }
-
-    public Call<List<Artist>> getSearchResults() {
-        setupRetrofit(ArtistMethod.SEARCH);
+        queryMap.put(METHOD, "artist.search");
         queryMap.put("limit", "10");
-        return apiService.getSearchResults(queryMap);
+
+//        Gson gson= new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistSearchDeserializer()).create();
+//        retrofit.converterFactories().add(GsonConverterFactory.create(gson));
+
+        return lastfmInterface.getSearchResults(queryMap);
     }
 
-    public Call<Artist> getCorrection(){
-        setupRetrofit(ArtistMethod.GET_CORRECTION);
-        return apiService.getCorrection(queryMap);
+    public Call<Artist> getArtistCorrection(String artist){
+        queryMap.put(ARTIST, artist);
+        queryMap.put(METHOD, "artist.getCorrection");
+
+//        Gson gson= new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistCorrectionDeserializer()).create();
+//        retrofit.converterFactories().add(GsonConverterFactory.create(gson));
+
+        return lastfmInterface.getCorrection(queryMap);
     }
 
-    public Call<Artist> getInfo(){
-        setupRetrofit(ArtistMethod.GET_INFO);
+    public Call<Artist> getArtistInfo(String artist){
+        queryMap.put(ARTIST, artist);
+        queryMap.put(METHOD, "artist.getInfo");
         queryMap.put("autocorrect", "1");
-        return apiService.getInfo(queryMap);
+
+//        Gson gson= new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistDeserializer()).create();
+//        retrofit.converterFactories().add(GsonConverterFactory.create(gson));
+
+        return lastfmInterface.getInfo(queryMap);
     }
-
-
 
 }

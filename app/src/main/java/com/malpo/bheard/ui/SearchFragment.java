@@ -3,6 +3,7 @@ package com.malpo.bheard.ui;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +13,14 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.networking.lastfm.artist.ArtistMethod;
 import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -34,9 +37,9 @@ public class SearchFragment extends Fragment {
     @Bind(R.id.search_box) EditText searchBox;
     @Bind(R.id.search_progress) ProgressBar progressBar;
 
-    public static final String TAG = SearchFragment.class.getSimpleName();
-
     private OnArtistResultListener listener;
+
+    @Inject ArtistSearch search;
 
     @Nullable
     @Override
@@ -44,6 +47,12 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.search_fragment, container, false);
         ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ((MyApplication) getActivity().getApplication()).getComponent().inject(this);
     }
 
     @Override
@@ -61,42 +70,26 @@ public class SearchFragment extends Fragment {
                 return true;
             }
         });
-
-//        ArtistSearch search = new ArtistSearch("Andrew");
-//        Call<List<Artist>> call = search.getSearchResults();
-//        call.enqueue(new Callback<List<Artist>>() {
-//            @Override
-//            public void onResponse(Response<List<Artist>> response, Retrofit retrofit) {
-//                List<Artist> artists = response.body();
-//            }
-//
-//            @Override
-//            public void onFailure(Throwable t) {
-//                Throwable x = t;
-//            }
-//        });
     }
 
 
     private void searchArtist(String artist){
         if(!artist.equals("")) {
 
-            ArtistSearch search = new ArtistSearch(artist);
-            Call<List<Artist>> call = search.getSearchResults();
-            call.enqueue(new Callback<List<Artist>>() {
+            Call<Artist> call = search.getArtistInfo(artist);
+            call.enqueue(new Callback<Artist>() {
                 @Override
-                public void onResponse(Response<List<Artist>> response, Retrofit retrofit) {
-                    List<Artist> artists = response.body();
+                public void onResponse(Response<Artist> response, Retrofit retrofit) {
+                    Artist art = response.body();
+                    String name = art.getName();
+                    listener.onArtistSearchResult(response.body());
                 }
 
                 @Override
                 public void onFailure(Throwable t) {
-                    Throwable x = t;
+                    Log.e("SEARCH_ERROR", "There was an error searching.", t);
                 }
             });
-
-
-
         }
     }
 

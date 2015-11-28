@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
 import com.malpo.bheard.models.Artist;
 import com.squareup.picasso.Picasso;
@@ -27,7 +28,9 @@ public class HomeActivity extends AppCompatActivity implements SearchFragment.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((MyApplication) getApplication()).getComponent().inject(this);
         setContentView(R.layout.activity_home);
+
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);

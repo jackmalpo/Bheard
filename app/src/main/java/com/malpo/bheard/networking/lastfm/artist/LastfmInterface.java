@@ -12,7 +12,7 @@ import retrofit.http.QueryMap;
 /**
  * Created by Jack on 10/8/15.
  */
-public interface ArtistInterface {
+public interface LastfmInterface {
 
     @GET ("/2.0/")
     Call<Artist> getCorrection(@QueryMap Map<String, String> filters);
