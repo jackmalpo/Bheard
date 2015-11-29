@@ -1,6 +1,7 @@
 package com.malpo.bheard.networking.lastfm.artist;
 
 import com.malpo.bheard.models.Artist;
+import com.malpo.bheard.networking.lastfm.LastfmInterface;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,18 +33,12 @@ public class ArtistSearch {
         queryMap.put(METHOD, "artist.search");
         queryMap.put("limit", "10");
 
-//        Gson gson= new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistSearchDeserializer()).create();
-//        retrofit.converterFactories().add(GsonConverterFactory.create(gson));
-
         return lastfmInterface.getSearchResults(queryMap);
     }
 
     public Call<Artist> getArtistCorrection(String artist){
         queryMap.put(ARTIST, artist);
         queryMap.put(METHOD, "artist.getCorrection");
-
-//        Gson gson= new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistCorrectionDeserializer()).create();
-//        retrofit.converterFactories().add(GsonConverterFactory.create(gson));
 
         return lastfmInterface.getCorrection(queryMap);
     }
@@ -52,9 +47,6 @@ public class ArtistSearch {
         queryMap.put(ARTIST, artist);
         queryMap.put(METHOD, "artist.getInfo");
         queryMap.put("autocorrect", "1");
-
-//        Gson gson= new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistDeserializer()).create();
-//        retrofit.converterFactories().add(GsonConverterFactory.create(gson));
 
         return lastfmInterface.getInfo(queryMap);
     }

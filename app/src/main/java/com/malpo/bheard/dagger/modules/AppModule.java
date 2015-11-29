@@ -7,19 +7,22 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
-import com.malpo.bheard.networking.lastfm.artist.LastfmInterface;
+import com.malpo.bheard.networking.lastfm.LastfmInterface;
 import com.malpo.bheard.networking.lastfm.artist.json.ArtistDeserializer;
+import com.malpo.bheard.networking.lastfm.artist.json.ArtistListDeserializer;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import de.greenrobot.event.EventBus;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 
@@ -78,7 +81,9 @@ public class AppModule {
     @Provides
     @Singleton
     Gson providesGson(){
-        return new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistDeserializer()).create();
+        return new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistDeserializer())
+                .registerTypeAdapter(List.class, new ArtistListDeserializer())
+                .create();
     }
 
     @Provides
@@ -102,6 +107,12 @@ public class AppModule {
     @Singleton
     ArtistSearch providesArtistSearch(LastfmInterface lastfmInterface, Retrofit retrofit){
         return new ArtistSearch(lastfmInterface, retrofit);
+    }
+
+    @Provides
+    @Singleton
+    EventBus providesEventBus(){
+        return EventBus.getDefault();
     }
 }
 

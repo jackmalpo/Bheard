@@ -8,50 +8,66 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.common.util.concurrent.ExecutionError;
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
+import com.malpo.bheard.eventbus.SearchResultEvent;
+import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
 import com.squareup.picasso.Picasso;
 
+import javax.inject.Inject;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import de.greenrobot.event.EventBus;
 
-public class HomeActivity extends AppCompatActivity implements SearchFragment.OnArtistResultListener{
+public class HomeActivity extends AppCompatActivity {
 
     private static final String SEARCH_TAG = "search";
 
-    @Bind(R.id.fab) FloatingActionButton fab;
     @Bind(R.id.toolbar) Toolbar toolbar;
     @Bind(R.id.header_logo) ImageView headerImage;
     @Bind(R.id.artist_name) TextView artistName;
 
+    @Inject EventBus bus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((MyApplication) getApplication()).getComponent().inject(this);
         setContentView(R.layout.activity_home);
 
         ButterKnife.bind(this);
+        ((MyApplication) getApplication()).getComponent().inject(this);
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(null);
+        try {
+            getSupportActionBar().setTitle(null);
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
 
         showSearch();
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showSearch();
-            }
-        });
-
     }
 
-    private void showSearch(){
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bus.register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        bus.unregister(this);
+        super.onStop();
+    }
+
+    @OnClick(R.id.fab)
+    public void showSearch(){
         if(findViewById(R.id.content_frame) != null){
             if(getFragmentManager().findFragmentByTag(SEARCH_TAG) == null) {
                 SearchFragment search = new SearchFragment();
-                search.setOnArtistResultListener(this);
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.content_frame, search, SEARCH_TAG)
@@ -60,15 +76,29 @@ public class HomeActivity extends AppCompatActivity implements SearchFragment.On
         }
     }
 
-    @Override
-    public void onArtistSearchResult(Artist artist) {
-        if(artist != null) {
+    /**
+     * Called when new artist search has been started.
+     * @param event
+     */
+    public void onEvent(SearchStartedEvent event){
+    }
+
+    /**
+     * Called when new artist has been found.
+     * @param event
+     */
+    public void onEvent(SearchResultEvent event){
+        Artist artist = event.artist;
+        try {
             String url = artist.getHeaderImageUrl();
             String name = artist.getName();
             Picasso.with(this).load(url).fit().centerCrop().into(headerImage);
 
             artistName.setVisibility(View.VISIBLE);
             artistName.setText(name);
+        } catch (NullPointerException e){
+            e.printStackTrace();
         }
     }
+
 }

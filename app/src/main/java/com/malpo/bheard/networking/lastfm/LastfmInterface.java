@@ -1,4 +1,4 @@
-package com.malpo.bheard.networking.lastfm.artist;
+package com.malpo.bheard.networking.lastfm;
 
 import com.malpo.bheard.models.Artist;
 

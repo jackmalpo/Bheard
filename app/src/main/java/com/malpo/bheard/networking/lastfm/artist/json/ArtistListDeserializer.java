@@ -14,33 +14,27 @@ import java.util.List;
 /**
  * Created by Jack on 10/9/15.
  */
-public class ArtistDeserializer implements JsonDeserializer<Artist>
+public class ArtistListDeserializer implements JsonDeserializer<List<Artist>>
 {
 
     JsonElement content;
     Gson gson;
 
     @Override
-    public Artist deserialize(JsonElement je, Type type, JsonDeserializationContext jdc)
-            throws JsonParseException
-    {
+    public List<Artist> deserialize(JsonElement je, Type type, JsonDeserializationContext jdc)
+            throws JsonParseException {
         gson = new Gson();
 
-        content = je.getAsJsonObject().get("artist");
-        if(content != null)
-            return gson.fromJson(content, type);
-
-
-        //used for artistCorrection response
-        content = je.getAsJsonObject().get("corrections");
-        if(content != null) {
-            content = content.getAsJsonObject().get("correction");
+        //ArtistSearch
+        content = je.getAsJsonObject().get("results");
+        if (content != null) {
+            content = content.getAsJsonObject().get("artistmatches");
             if (content != null) {
-                content = content.getAsJsonObject().get("artist");
+                content = content.getAsJsonObject().get("artist").getAsJsonArray();
                 return gson.fromJson(content, type);
             }
-        }
 
+        }
         return null;
     }
 }
