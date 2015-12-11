@@ -10,6 +10,7 @@ import dagger.Component;
 
 /**
  * Created by Jack on 11/25/15.
+ * Handles injecting of AppModule into Activites / Fragments
  */
 @Singleton
 @Component(modules = AppModule.class)

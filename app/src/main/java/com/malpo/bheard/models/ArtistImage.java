@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by Jack on 10/12/15.
+ * LastFm ArtistImage Model
  */
 public class ArtistImage {
 

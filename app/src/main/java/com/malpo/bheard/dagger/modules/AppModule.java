@@ -28,6 +28,7 @@ import retrofit.Retrofit;
 
 /**
  * Created by Jack on 11/25/15.
+ * Dagger Module construction singletons that will be provided throughout the app.
  */
 @Module
 public class AppModule {

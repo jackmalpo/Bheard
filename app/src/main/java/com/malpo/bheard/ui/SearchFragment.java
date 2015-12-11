@@ -1,16 +1,17 @@
 package com.malpo.bheard.ui;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ProgressBar;
 
 import com.malpo.bheard.MyApplication;
@@ -37,7 +38,7 @@ import retrofit.Retrofit;
  */
 public class SearchFragment extends Fragment {
 
-    @Bind(R.id.search_box) EditText searchBox;
+    @Bind(R.id.search_box) AutoCompleteTextView searchBox;
     @Bind(R.id.search_progress) ProgressBar progressBar;
 
     @Inject ArtistSearch search;
@@ -52,23 +53,47 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((MyApplication) getActivity().getApplication()).getComponent().inject(this);
     }
 
-    @OnTextChanged(R.id.search_box) void onTextChanged(CharSequence s, int start, int before, int count){
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        showKeyboard();
+
+        String[] temp = new String[]{"Jack", "Blah"};
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_item, temp);
+        searchBox.setThreshold(1);
+        searchBox.setAdapter(arrayAdapter);
+    }
+
+    @OnTextChanged(R.id.search_box) void onTextChanged(CharSequence s){
         searchTest(s.toString());
     }
 
 
     @OnEditorAction(R.id.search_box) boolean onEditorAction(int actionId){
-        if (actionId == EditorInfo.IME_ACTION_DONE) {
+        if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
             String artist = searchBox.getText().toString();
             searchArtist(artist);
             return false;
         }
         return true;
+    }
+
+    private void showKeyboard(){
+        searchBox.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(searchBox, InputMethodManager.SHOW_IMPLICIT);
     }
 
     private void searchArtist(String artist){

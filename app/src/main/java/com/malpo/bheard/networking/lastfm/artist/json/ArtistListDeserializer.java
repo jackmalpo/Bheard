@@ -13,12 +13,13 @@ import java.util.List;
 
 /**
  * Created by Jack on 10/9/15.
+ * Deserializes LastFm LIST Artist responses.
  */
 public class ArtistListDeserializer implements JsonDeserializer<List<Artist>>
 {
 
-    JsonElement content;
-    Gson gson;
+    private JsonElement content;
+    private Gson gson;
 
     @Override
     public List<Artist> deserialize(JsonElement je, Type type, JsonDeserializationContext jdc)

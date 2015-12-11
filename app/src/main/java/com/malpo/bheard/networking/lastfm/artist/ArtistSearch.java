@@ -12,6 +12,8 @@ import retrofit.Retrofit;
 
 /**
  * Created by Jack on 10/9/15.
+ * Handles Retrofit Calls to LastFmInterface
+ * @see LastfmInterface
  */
 public class ArtistSearch {
     private static final String METHOD = "method";
@@ -19,8 +21,8 @@ public class ArtistSearch {
 
     private Map<String, String> queryMap;
 
-    LastfmInterface lastfmInterface;
-    Retrofit retrofit;
+    private LastfmInterface lastfmInterface;
+    private Retrofit retrofit;
 
     public ArtistSearch(LastfmInterface lastfmInterface, Retrofit retrofit){
         this.lastfmInterface = lastfmInterface;

@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * Created by Jack on 10/8/15.
+ * LastFm Artist Model
  */
 public class Artist {
     private String name;
