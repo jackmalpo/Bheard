@@ -10,16 +10,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ProgressBar;
 
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
+import com.malpo.bheard.adapters.SearchDropdownAdapter;
 import com.malpo.bheard.eventbus.SearchResultEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -36,13 +41,17 @@ import retrofit.Retrofit;
 /**
  * Created by Jack on 9/19/15.
  */
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements AdapterView.OnItemClickListener{
 
     @Bind(R.id.search_box) AutoCompleteTextView searchBox;
     @Bind(R.id.search_progress) ProgressBar progressBar;
 
     @Inject ArtistSearch search;
     @Inject EventBus bus;
+
+    private List<Artist> searchText;
+    private Call<List<Artist>> searchCall;
+    private SearchDropdownAdapter arrayAdapter;
 
     @Nullable
     @Override
@@ -69,15 +78,31 @@ public class SearchFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         showKeyboard();
-
-        String[] temp = new String[]{"Jack", "Blah"};
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_item, temp);
-        searchBox.setThreshold(1);
-        searchBox.setAdapter(arrayAdapter);
+        setupAdapter();
     }
 
     @OnTextChanged(R.id.search_box) void onTextChanged(CharSequence s){
-        searchTest(s.toString());
+        startDropDownSearch(s.toString());
+    }
+
+    private void startDropDownSearch(String artist){
+        if(searchCall != null){
+            searchCall.cancel();
+        }
+        searchCall = search.getSearchResults(artist);
+        searchCall.enqueue(new Callback<List<Artist>>() {
+            @Override
+            public void onResponse(Response<List<Artist>> response, Retrofit retrofit) {
+                if(response.body() != null) {
+                    updateAdapter(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
     }
 
 
@@ -94,6 +119,18 @@ public class SearchFragment extends Fragment {
         searchBox.requestFocus();
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(searchBox, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    private void setupAdapter(){
+        searchText = new ArrayList<>();
+        arrayAdapter = new SearchDropdownAdapter(getActivity(), R.layout.search_dropdown_item, searchText);
+        searchBox.setOnItemClickListener(this);
+        searchBox.setThreshold(1);
+        searchBox.setAdapter(arrayAdapter);
+    }
+
+    private void updateAdapter(List<Artist> response){
+        arrayAdapter.updateData(response);
     }
 
     private void searchArtist(String artist){
@@ -136,7 +173,9 @@ public class SearchFragment extends Fragment {
         }
     }
 
-
-    private void searchTest(String artist){
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Artist artist = (Artist) parent.getItemAtPosition(position);
+        searchBox.setText(artist.getName());
     }
 }

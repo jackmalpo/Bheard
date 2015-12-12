@@ -33,7 +33,7 @@ public class ArtistSearch {
     public Call<List<Artist>> getSearchResults(String artist) {
         queryMap.put(ARTIST, artist);
         queryMap.put(METHOD, "artist.search");
-        queryMap.put("limit", "10");
+        queryMap.put("limit", "5");
 
         return lastfmInterface.getSearchResults(queryMap);
     }

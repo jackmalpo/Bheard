@@ -22,7 +22,9 @@
                 android:inputType="text"
                 android:singleLine="true"
                 android:imeOptions="actionDone"
-                android:hint="Search for an artist..."/>
+                android:hint="Search for an artist..."
+                android:dropDownAnchor="@+id/search_box_wrapper"
+                android:dropDownHeight="100dp" />
 
         </android.support.design.widget.TextInputLayout>
 
