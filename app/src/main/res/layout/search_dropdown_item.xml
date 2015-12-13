@@ -14,7 +14,8 @@
         android:ellipsize="end"
         android:textSize="15sp"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="5dp"/>
+        android:layout_marginLeft="5dp"
+        android:layout_toLeftOf="@+id/dropdown_image"/>
 
     <ImageView
         android:layout_margin="2dp"

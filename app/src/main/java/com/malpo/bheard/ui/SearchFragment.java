@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ProgressBar;
 
@@ -44,14 +43,16 @@ import retrofit.Retrofit;
 public class SearchFragment extends Fragment implements AdapterView.OnItemClickListener{
 
     @Bind(R.id.search_box) AutoCompleteTextView searchBox;
+
     @Bind(R.id.search_progress) ProgressBar progressBar;
 
     @Inject ArtistSearch search;
+
     @Inject EventBus bus;
 
     private List<Artist> searchText;
     private Call<List<Artist>> searchCall;
-    private SearchDropdownAdapter arrayAdapter;
+    private SearchDropdownAdapter searchAdapter;
 
     @Nullable
     @Override
@@ -121,38 +122,37 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         imm.showSoftInput(searchBox, InputMethodManager.SHOW_IMPLICIT);
     }
 
+    private void hideKeyboard(){
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
     private void setupAdapter(){
         searchText = new ArrayList<>();
-        arrayAdapter = new SearchDropdownAdapter(getActivity(), R.layout.search_dropdown_item, searchText);
+        searchAdapter = new SearchDropdownAdapter(getActivity(), R.layout.search_dropdown_item, searchText);
         searchBox.setOnItemClickListener(this);
         searchBox.setThreshold(1);
-        searchBox.setAdapter(arrayAdapter);
+        searchBox.setAdapter(searchAdapter);
     }
 
     private void updateAdapter(List<Artist> response){
-        arrayAdapter.updateData(response);
+        searchAdapter.updateData(response);
     }
 
     private void searchArtist(String artist){
         if(!artist.equals("")) {
 
-            //post EventBus started event
-            bus.post(new SearchStartedEvent());
-
-            //turn on progress bar
-            updateProgressBar(true);
+            artistSearchStarted();
 
             //get arist info from last.fm
             Call<Artist> call = search.getArtistInfo(artist);
             call.enqueue(new Callback<Artist>() {
                 @Override
                 public void onResponse(Response<Artist> response, Retrofit retrofit) {
-
-                    //turn off progress bar
-                    updateProgressBar(false);
-
-                    //post EventBus result event
-                    bus.post(new SearchResultEvent(response.body()));
+                    artistSearchFinished(response.body());
                 }
 
                 @Override
@@ -163,9 +163,26 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         }
     }
 
+    private void artistSearchStarted(){
+        hideKeyboard();
+
+        //post EventBus started event
+        bus.post(new SearchStartedEvent());
+
+        //turn on progress bar
+        updateProgressBar(true);
+    }
+
+    private void artistSearchFinished(Artist artist){
+        //turn off progress bar
+        updateProgressBar(false);
+
+        //post EventBus result event
+        bus.post(new SearchResultEvent(artist));
+    }
+
     private void updateProgressBar(boolean visible){
-        int visibility = progressBar.getVisibility();
-        if(visibility == View.GONE || visibility == View.INVISIBLE && visible){
+        if(visible){
             searchBox.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
         } else {
@@ -175,7 +192,20 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        artistSearchStarted();
         Artist artist = (Artist) parent.getItemAtPosition(position);
-        searchBox.setText(artist.getName());
+        artistSearchFinished(artist);
+    }
+
+    public void searchIfPossible(){
+        if(searchBox != null) {
+            if (searchBox.getVisibility() == View.VISIBLE && !searchBox.getText().toString().equals("")) {
+                searchArtist(searchBox.getText().toString());
+            } else {
+                searchBox.setText("");
+                searchBox.setVisibility(View.VISIBLE);
+                showKeyboard();
+            }
+        }
     }
 }

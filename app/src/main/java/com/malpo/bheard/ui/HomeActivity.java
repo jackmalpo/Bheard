@@ -28,7 +28,9 @@ public class HomeActivity extends AppCompatActivity {
     private static final String SEARCH_TAG = "search";
 
     @Bind(R.id.toolbar) Toolbar toolbar;
+
     @Bind(R.id.header_logo) ImageView headerImage;
+
     @Bind(R.id.artist_name) TextView artistName;
 
     @Inject EventBus bus;
@@ -66,12 +68,17 @@ public class HomeActivity extends AppCompatActivity {
     @OnClick(R.id.fab)
     public void showSearch(){
         if(findViewById(R.id.content_frame) != null){
-            if(getFragmentManager().findFragmentByTag(SEARCH_TAG) == null) {
-                SearchFragment search = new SearchFragment();
+            SearchFragment search;
+            if(getSupportFragmentManager().findFragmentByTag(SEARCH_TAG) == null) {
+                search = new SearchFragment();
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.content_frame, search, SEARCH_TAG)
                         .commit();
+                getSupportFragmentManager().executePendingTransactions();
+            } else{
+                search = (SearchFragment) getSupportFragmentManager().findFragmentByTag(SEARCH_TAG);
+                search.searchIfPossible();
             }
         }
     }

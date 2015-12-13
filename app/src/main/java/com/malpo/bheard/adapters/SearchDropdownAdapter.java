@@ -14,6 +14,9 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by Jack on 12/12/15.
  */
@@ -61,9 +64,13 @@ public class SearchDropdownAdapter extends ArrayAdapter<Artist> {
 
         try {
             holder.textView.setText(thisArtist.getName());
-            Picasso.with(context).load(thisArtist.getImage().get(3).getText()).into(holder.imageView);
+            String url = thisArtist.getImage().get(3).getText();
+            if(!url.equals(""))
+                Picasso.with(context).load(url).into(holder.imageView);
         }catch (NullPointerException e){
             e.printStackTrace();
+        } finally {
+
         }
 
 
@@ -72,12 +79,11 @@ public class SearchDropdownAdapter extends ArrayAdapter<Artist> {
 
 
     static class ViewHolder {
-        TextView textView;
-        ImageView imageView;
+        @Bind(R.id.dropdown_text) TextView textView;
+        @Bind(R.id.dropdown_image) ImageView imageView;
 
         public ViewHolder(View view){
-            textView = (TextView) view.findViewById(R.id.dropdown_text);
-            imageView = (ImageView) view.findViewById(R.id.dropdown_image);
+            ButterKnife.bind(this, view);
         }
 
     }
