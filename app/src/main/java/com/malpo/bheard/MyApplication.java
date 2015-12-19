@@ -1,9 +1,10 @@
 package com.malpo.bheard;
 
 import android.app.Application;
+
 import com.malpo.bheard.dagger.components.AppComponent;
-import com.malpo.bheard.dagger.modules.AppModule;
 import com.malpo.bheard.dagger.components.DaggerAppComponent;
+import com.malpo.bheard.dagger.modules.AppModule;
 
 /**
  * Created by Jack on 11/27/15.
@@ -22,5 +23,6 @@ public class MyApplication extends Application {
     public AppComponent getComponent(){
         return component;
     }
+
 
 }

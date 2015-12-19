@@ -2,6 +2,7 @@ package com.malpo.bheard.ui;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -45,7 +46,6 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     @Bind(R.id.search_box) AutoCompleteTextView searchBox;
 
     @Bind(R.id.search_progress) ProgressBar progressBar;
-
     @Inject ArtistSearch search;
 
     @Inject EventBus bus;
@@ -134,7 +134,7 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         searchText = new ArrayList<>();
         searchAdapter = new SearchDropdownAdapter(getActivity(), R.layout.search_dropdown_item, searchText);
         searchBox.setOnItemClickListener(this);
-        searchBox.setThreshold(1);
+//        searchBox.setThreshold(1);
         searchBox.setAdapter(searchAdapter);
     }
 
@@ -166,27 +166,40 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     private void artistSearchStarted(){
         hideKeyboard();
 
+        //turn on progress bar
+        updateProgressBar(true);
+
         //post EventBus started event
         bus.post(new SearchStartedEvent());
 
-        //turn on progress bar
-        updateProgressBar(true);
+
     }
 
     private void artistSearchFinished(Artist artist){
-        //turn off progress bar
-        updateProgressBar(false);
 
         //post EventBus result event
         bus.post(new SearchResultEvent(artist));
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                updateProgressBar(false);
+            }
+        }, 900);
+
     }
 
     private void updateProgressBar(boolean visible){
-        if(visible){
-            searchBox.setVisibility(View.GONE);
-            progressBar.setVisibility(View.VISIBLE);
-        } else {
-            progressBar.setVisibility(View.GONE);
+        try {
+            if (visible) {
+                searchBox.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+            } else {
+                progressBar.setVisibility(View.GONE);
+            }
+        } catch (NullPointerException e){
+            e.printStackTrace();
         }
     }
 

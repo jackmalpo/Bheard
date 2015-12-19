@@ -1,19 +1,19 @@
 package com.malpo.bheard.ui;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.common.util.concurrent.ExecutionError;
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
 import com.malpo.bheard.eventbus.SearchResultEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
+import com.malpo.bheard.picasso.CropFaces;
 import com.squareup.picasso.Picasso;
 
 import javax.inject.Inject;
@@ -99,8 +99,8 @@ public class HomeActivity extends AppCompatActivity {
         try {
             String url = artist.getHeaderImageUrl();
             String name = artist.getName();
+//            Picasso.with(this).load(url).transform(new CropFaces(this, headerImage.getWidth(), headerImage.getHeight())).into(headerImage);
             Picasso.with(this).load(url).fit().centerCrop().into(headerImage);
-
             artistName.setVisibility(View.VISIBLE);
             artistName.setText(name);
         } catch (NullPointerException e){
