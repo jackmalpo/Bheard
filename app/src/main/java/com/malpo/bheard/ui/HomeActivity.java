@@ -1,6 +1,13 @@
 package com.malpo.bheard.ui;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -14,6 +21,8 @@ import com.malpo.bheard.eventbus.SearchResultEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.picasso.CropFaces;
+import com.malpo.bheard.tabs.SampleFragmentPagerAdapter;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import javax.inject.Inject;
@@ -27,11 +36,20 @@ public class HomeActivity extends AppCompatActivity {
 
     private static final String SEARCH_TAG = "search";
 
-    @Bind(R.id.toolbar) Toolbar toolbar;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
 
-    @Bind(R.id.header_logo) ImageView headerImage;
+    @Bind(R.id.header_logo)
+    ImageView headerImage;
 
-    @Bind(R.id.artist_name) TextView artistName;
+    @Bind(R.id.toolbar_layout)
+    CollapsingToolbarLayout collapsingToolbarLayout;
+
+    @Bind(R.id.viewpager)
+    ViewPager viewPager;
+
+    @Bind(R.id.tabs)
+    TabLayout tabLayout;
 
     @Inject EventBus bus;
 
@@ -50,7 +68,20 @@ public class HomeActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        showSearch();
+        collapsingToolbarLayout.setTitle("");
+
+        collapsingToolbarLayout.setContentScrimColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+        collapsingToolbarLayout.setStatusBarScrimColor(ContextCompat.getColor(this, R.color.colorAccent));
+
+//        showSearch();
+
+        viewPager.setAdapter(new SampleFragmentPagerAdapter(
+                getSupportFragmentManager(),
+                HomeActivity.this));
+
+        tabLayout.setupWithViewPager(viewPager);
+
+
     }
 
     @Override
@@ -67,20 +98,20 @@ public class HomeActivity extends AppCompatActivity {
 
     @OnClick(R.id.fab)
     public void showSearch(){
-        if(findViewById(R.id.content_frame) != null){
-            SearchFragment search;
-            if(getSupportFragmentManager().findFragmentByTag(SEARCH_TAG) == null) {
-                search = new SearchFragment();
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.content_frame, search, SEARCH_TAG)
-                        .commit();
-                getSupportFragmentManager().executePendingTransactions();
-            } else{
-                search = (SearchFragment) getSupportFragmentManager().findFragmentByTag(SEARCH_TAG);
-                search.searchIfPossible();
-            }
-        }
+//        if(findViewById(R.id.content_frame) != null){
+//            SearchFragment search;
+//            if(getSupportFragmentManager().findFragmentByTag(SEARCH_TAG) == null) {
+//                search = new SearchFragment();
+//                getSupportFragmentManager()
+//                        .beginTransaction()
+//                        .replace(R.id.content_frame, search, SEARCH_TAG)
+//                        .commit();
+//                getSupportFragmentManager().executePendingTransactions();
+//            } else{
+//                search = (SearchFragment) getSupportFragmentManager().findFragmentByTag(SEARCH_TAG);
+//                search.searchIfPossible();
+//            }
+//        }
     }
 
     /**
@@ -100,9 +131,28 @@ public class HomeActivity extends AppCompatActivity {
             String url = artist.getHeaderImageUrl();
             String name = artist.getName();
 //            Picasso.with(this).load(url).transform(new CropFaces(this, headerImage.getWidth(), headerImage.getHeight())).into(headerImage);
-            Picasso.with(this).load(url).fit().centerCrop().into(headerImage);
-            artistName.setVisibility(View.VISIBLE);
-            artistName.setText(name);
+            Picasso.with(this).load(url).fit().centerCrop().into(headerImage, new Callback() {
+                @Override
+                public void onSuccess() {
+                    Bitmap bitmap = ((BitmapDrawable) headerImage.getDrawable()).getBitmap();
+                    Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                        @Override
+                        public void onGenerated(Palette palette) {
+                            int primaryDark = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark);
+                            int primary = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
+                            collapsingToolbarLayout.setContentScrimColor(palette.getMutedColor(primary));
+                            collapsingToolbarLayout.setStatusBarScrimColor(palette.getDarkVibrantColor(primaryDark));
+                        }
+                    });
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
+
+            collapsingToolbarLayout.setTitle(name);
         } catch (NullPointerException e){
             e.printStackTrace();
         }

@@ -78,8 +78,16 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        showKeyboard();
+//        showKeyboard();
         setupAdapter();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(searchBox != null){
+            searchBox.setText("");
+        }
     }
 
     @OnTextChanged(R.id.search_box) void onTextChanged(CharSequence s){
@@ -134,7 +142,6 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         searchText = new ArrayList<>();
         searchAdapter = new SearchDropdownAdapter(getActivity(), R.layout.search_dropdown_item, searchText);
         searchBox.setOnItemClickListener(this);
-//        searchBox.setThreshold(1);
         searchBox.setAdapter(searchAdapter);
     }
 
@@ -164,14 +171,16 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     }
 
     private void artistSearchStarted(){
-        hideKeyboard();
-
-        //turn on progress bar
-        updateProgressBar(true);
 
         //post EventBus started event
         bus.post(new SearchStartedEvent());
 
+        hideKeyboard();
+
+        searchBox.setText("");
+
+        //turn on progress bar
+        updateProgressBar(true);
 
     }
 
@@ -184,6 +193,7 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                searchBox.setText("");
                 updateProgressBar(false);
             }
         }, 900);
@@ -197,6 +207,7 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
                 progressBar.setVisibility(View.VISIBLE);
             } else {
                 progressBar.setVisibility(View.GONE);
+                searchBox.setVisibility(View.VISIBLE);
             }
         } catch (NullPointerException e){
             e.printStackTrace();
