@@ -1,26 +1,25 @@
 package com.malpo.bheard.ui;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
 import com.malpo.bheard.eventbus.SearchResultEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.picasso.CropFaces;
 import com.malpo.bheard.tabs.SampleFragmentPagerAdapter;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -73,14 +72,13 @@ public class HomeActivity extends AppCompatActivity {
         collapsingToolbarLayout.setContentScrimColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         collapsingToolbarLayout.setStatusBarScrimColor(ContextCompat.getColor(this, R.color.colorAccent));
 
-//        showSearch();
-
         viewPager.setAdapter(new SampleFragmentPagerAdapter(
                 getSupportFragmentManager(),
                 HomeActivity.this));
 
         tabLayout.setupWithViewPager(viewPager);
 
+        tabLayout.requestFocus();
 
     }
 
@@ -138,10 +136,7 @@ public class HomeActivity extends AppCompatActivity {
                     Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
                         @Override
                         public void onGenerated(Palette palette) {
-                            int primaryDark = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark);
-                            int primary = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
-                            collapsingToolbarLayout.setContentScrimColor(palette.getMutedColor(primary));
-                            collapsingToolbarLayout.setStatusBarScrimColor(palette.getDarkVibrantColor(primaryDark));
+                            updateColors(palette);
                         }
                     });
                 }
@@ -153,9 +148,28 @@ public class HomeActivity extends AppCompatActivity {
             });
 
             collapsingToolbarLayout.setTitle(name);
+
         } catch (NullPointerException e){
             e.printStackTrace();
         }
+    }
+
+    private void updateColors(Palette palette){
+        int primaryDark = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark);
+        int primary = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
+
+        //Update Status Bar Color
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            Window window = getWindow();
+//            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+//            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+//            window.setStatusBarColor(palette.getDarkVibrantColor(primaryDark));
+//        }
+
+
+        //Update Scrim colors for scroll up.
+        collapsingToolbarLayout.setContentScrimColor(palette.getMutedColor(primary));
+        collapsingToolbarLayout.setStatusBarScrimColor(palette.getDarkVibrantColor(primaryDark));
     }
 
 }

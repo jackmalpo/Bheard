@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 import com.malpo.bheard.networking.lastfm.LastfmInterface;
@@ -33,18 +34,18 @@ import retrofit.Retrofit;
 @Module
 public class AppModule {
 
-    private final Application mApplication;
+    private final MyApplication mApplication;
     private static final String BASE_URL = "http://ws.audioscrobbler.com";
     private static final String API_KEY = "&api_key=9f6527a795ad3e1f3a73aa3bf2d5a428";
     private static final String FORMAT = "&format=json";
 
-    public AppModule(Application application) {
+    public AppModule(MyApplication application) {
         mApplication = application;
     }
 
     @Provides
     @Singleton
-    Application providesApplication() {
+    MyApplication providesApplication() {
         return mApplication;
     }
 

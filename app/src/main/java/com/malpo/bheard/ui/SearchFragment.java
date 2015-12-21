@@ -30,6 +30,7 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import butterknife.OnTextChanged;
 import de.greenrobot.event.EventBus;
@@ -86,8 +87,14 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     public void onResume() {
         super.onResume();
         if(searchBox != null){
-            searchBox.setText("");
+            if(!searchBox.getText().toString().equals("")) {
+                searchBox.setText("");
+            }
         }
+    }
+
+    @OnClick(R.id.search_box) void onClick(View v){
+        showKeyboard();
     }
 
     @OnTextChanged(R.id.search_box) void onTextChanged(CharSequence s){
