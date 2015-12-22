@@ -18,16 +18,13 @@ import java.util.List;
 public class ArtistDeserializer implements JsonDeserializer<Artist>
 {
 
-    private JsonElement content;
-    private Gson gson;
-
     @Override
     public Artist deserialize(JsonElement je, Type type, JsonDeserializationContext jdc)
             throws JsonParseException
     {
-        gson = new Gson();
+        Gson gson = new Gson();
 
-        content = je.getAsJsonObject().get("artist");
+        JsonElement content = je.getAsJsonObject().get("artist");
         if(content != null)
             return gson.fromJson(content, type);
 

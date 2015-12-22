@@ -79,7 +79,7 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-//        showKeyboard();
+        showKeyboard();
         setupAdapter();
     }
 
@@ -161,7 +161,7 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
 
             artistSearchStarted();
 
-            //get arist info from last.fm
+            //get artist info from last.fm
             Call<Artist> call = search.getArtistInfo(artist);
             call.enqueue(new Callback<Artist>() {
                 @Override

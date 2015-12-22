@@ -2,7 +2,6 @@ package com.malpo.bheard.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.TabLayout;
@@ -11,8 +10,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.malpo.bheard.MyApplication;
@@ -61,24 +58,14 @@ public class HomeActivity extends AppCompatActivity {
         ((MyApplication) getApplication()).getComponent().inject(this);
 
         setSupportActionBar(toolbar);
-        try {
+
+        if(getSupportActionBar() != null)
             getSupportActionBar().setTitle(null);
-        } catch (NullPointerException e){
-            e.printStackTrace();
-        }
+
 
         collapsingToolbarLayout.setTitle("");
-
         collapsingToolbarLayout.setContentScrimColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         collapsingToolbarLayout.setStatusBarScrimColor(ContextCompat.getColor(this, R.color.colorAccent));
-
-        viewPager.setAdapter(new SampleFragmentPagerAdapter(
-                getSupportFragmentManager(),
-                HomeActivity.this));
-
-        tabLayout.setupWithViewPager(viewPager);
-
-        tabLayout.requestFocus();
 
     }
 
@@ -96,20 +83,10 @@ public class HomeActivity extends AppCompatActivity {
 
     @OnClick(R.id.fab)
     public void showSearch(){
-//        if(findViewById(R.id.content_frame) != null){
-//            SearchFragment search;
-//            if(getSupportFragmentManager().findFragmentByTag(SEARCH_TAG) == null) {
-//                search = new SearchFragment();
-//                getSupportFragmentManager()
-//                        .beginTransaction()
-//                        .replace(R.id.content_frame, search, SEARCH_TAG)
-//                        .commit();
-//                getSupportFragmentManager().executePendingTransactions();
-//            } else{
-//                search = (SearchFragment) getSupportFragmentManager().findFragmentByTag(SEARCH_TAG);
-//                search.searchIfPossible();
-//            }
-//        }
+        if(getSupportFragmentManager().findFragmentByTag(SEARCH_TAG) != null) {
+            SearchFragment fragment = (SearchFragment) getSupportFragmentManager().findFragmentByTag(SEARCH_TAG);
+            fragment.searchIfPossible();
+        }
     }
 
     /**
@@ -117,6 +94,7 @@ public class HomeActivity extends AppCompatActivity {
      * @param event
      */
     public void onEvent(SearchStartedEvent event){
+
     }
 
     /**
@@ -125,6 +103,20 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void onEvent(SearchResultEvent event){
         Artist artist = event.artist;
+        updateHeader(artist);
+        setupViewPager();
+
+    }
+
+    private void setupViewPager(){
+        viewPager.setAdapter(new SampleFragmentPagerAdapter(
+                getSupportFragmentManager(),
+                HomeActivity.this));
+
+        tabLayout.setupWithViewPager(viewPager);
+    }
+
+    private void updateHeader(Artist artist){
         try {
             String url = artist.getHeaderImageUrl();
             String name = artist.getName();
@@ -155,21 +147,17 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void updateColors(Palette palette){
-        int primaryDark = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark);
-        int primary = ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
-
-        //Update Status Bar Color
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            Window window = getWindow();
-//            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-//            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-//            window.setStatusBarColor(palette.getDarkVibrantColor(primaryDark));
-//        }
-
+        int primary = ContextCompat.getColor(this, R.color.colorPrimary);
+        int primaryDark = ContextCompat.getColor(this, R.color.colorPrimaryDark);
+        int accent = ContextCompat.getColor(this, R.color.colorAccent);
 
         //Update Scrim colors for scroll up.
         collapsingToolbarLayout.setContentScrimColor(palette.getMutedColor(primary));
         collapsingToolbarLayout.setStatusBarScrimColor(palette.getDarkVibrantColor(primaryDark));
+        collapsingToolbarLayout.setExpandedTitleColor(palette.getLightMutedColor(primary));
+
+        tabLayout.setTabTextColors(palette.getLightMutedColor(primaryDark), palette.getDarkVibrantColor(accent));
+        tabLayout.setSelectedTabIndicatorColor(palette.getDarkVibrantColor(primaryDark));
     }
 
 }
