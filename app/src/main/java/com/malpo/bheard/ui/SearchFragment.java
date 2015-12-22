@@ -30,7 +30,6 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import butterknife.OnTextChanged;
 import de.greenrobot.event.EventBus;
@@ -75,14 +74,6 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         ((MyApplication) getActivity().getApplication()).getComponent().inject(this);
     }
 
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        showKeyboard();
-        setupAdapter();
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -91,10 +82,8 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
                 searchBox.setText("");
             }
         }
-    }
 
-    @OnClick(R.id.search_box) void onClick(View v){
-        showKeyboard();
+        setupAdapter();
     }
 
     @OnTextChanged(R.id.search_box) void onTextChanged(CharSequence s){
@@ -132,9 +121,9 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     }
 
     private void showKeyboard(){
-        searchBox.requestFocus();
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(searchBox, InputMethodManager.SHOW_IMPLICIT);
+        searchBox.requestFocus();
+        imm.showSoftInput(searchBox, InputMethodManager.SHOW_FORCED);
     }
 
     private void hideKeyboard(){
@@ -179,10 +168,10 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
 
     private void artistSearchStarted(){
 
+        hideKeyboard();
+
         //post EventBus started event
         bus.post(new SearchStartedEvent());
-
-        hideKeyboard();
 
         searchBox.setText("");
 

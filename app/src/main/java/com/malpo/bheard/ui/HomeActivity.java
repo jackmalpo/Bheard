@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -33,21 +34,24 @@ public class HomeActivity extends AppCompatActivity {
     private static final String SEARCH_TAG = "search";
 
     @Bind(R.id.toolbar)
-    Toolbar toolbar;
+    Toolbar mToolbar;
 
     @Bind(R.id.header_logo)
-    ImageView headerImage;
+    ImageView mHeaderImage;
 
     @Bind(R.id.toolbar_layout)
-    CollapsingToolbarLayout collapsingToolbarLayout;
+    CollapsingToolbarLayout mCollapsingToolbarLayout;
 
     @Bind(R.id.viewpager)
-    ViewPager viewPager;
+    ViewPager mViewPager;
 
     @Bind(R.id.tabs)
-    TabLayout tabLayout;
+    TabLayout mTabLayout;
 
-    @Inject EventBus bus;
+    @Bind(R.id.fab)
+    FloatingActionButton mFloatingActionButton;
+
+    @Inject EventBus mBus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,27 +61,27 @@ public class HomeActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         ((MyApplication) getApplication()).getComponent().inject(this);
 
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mToolbar);
 
         if(getSupportActionBar() != null)
             getSupportActionBar().setTitle(null);
 
 
-        collapsingToolbarLayout.setTitle("");
-        collapsingToolbarLayout.setContentScrimColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
-        collapsingToolbarLayout.setStatusBarScrimColor(ContextCompat.getColor(this, R.color.colorAccent));
+        mCollapsingToolbarLayout.setTitle("");
+        mCollapsingToolbarLayout.setContentScrimColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+        mCollapsingToolbarLayout.setStatusBarScrimColor(ContextCompat.getColor(this, R.color.colorAccent));
 
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        bus.register(this);
+        mBus.register(this);
     }
 
     @Override
     protected void onStop() {
-        bus.unregister(this);
+        mBus.unregister(this);
         super.onStop();
     }
 
@@ -85,7 +89,9 @@ public class HomeActivity extends AppCompatActivity {
     public void showSearch(){
         if(getSupportFragmentManager().findFragmentByTag(SEARCH_TAG) != null) {
             SearchFragment fragment = (SearchFragment) getSupportFragmentManager().findFragmentByTag(SEARCH_TAG);
-            fragment.searchIfPossible();
+            if(fragment != null) {
+                fragment.searchIfPossible();
+            }
         }
     }
 
@@ -109,22 +115,22 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupViewPager(){
-        viewPager.setAdapter(new SampleFragmentPagerAdapter(
+        mViewPager.setAdapter(new SampleFragmentPagerAdapter(
                 getSupportFragmentManager(),
                 HomeActivity.this));
 
-        tabLayout.setupWithViewPager(viewPager);
+        mTabLayout.setupWithViewPager(mViewPager);
     }
 
     private void updateHeader(Artist artist){
         try {
             String url = artist.getHeaderImageUrl();
             String name = artist.getName();
-//            Picasso.with(this).load(url).transform(new CropFaces(this, headerImage.getWidth(), headerImage.getHeight())).into(headerImage);
-            Picasso.with(this).load(url).fit().centerCrop().into(headerImage, new Callback() {
+//            Picasso.with(this).load(url).transform(new CropFaces(this, mHeaderImage.getWidth(), mHeaderImage.getHeight())).into(mHeaderImage);
+            Picasso.with(this).load(url).fit().centerCrop().into(mHeaderImage, new Callback() {
                 @Override
                 public void onSuccess() {
-                    Bitmap bitmap = ((BitmapDrawable) headerImage.getDrawable()).getBitmap();
+                    Bitmap bitmap = ((BitmapDrawable) mHeaderImage.getDrawable()).getBitmap();
                     Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
                         @Override
                         public void onGenerated(Palette palette) {
@@ -139,7 +145,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
             });
 
-            collapsingToolbarLayout.setTitle(name);
+            mCollapsingToolbarLayout.setTitle(name);
 
         } catch (NullPointerException e){
             e.printStackTrace();
@@ -152,12 +158,16 @@ public class HomeActivity extends AppCompatActivity {
         int accent = ContextCompat.getColor(this, R.color.colorAccent);
 
         //Update Scrim colors for scroll up.
-        collapsingToolbarLayout.setContentScrimColor(palette.getMutedColor(primary));
-        collapsingToolbarLayout.setStatusBarScrimColor(palette.getDarkVibrantColor(primaryDark));
-        collapsingToolbarLayout.setExpandedTitleColor(palette.getLightMutedColor(primary));
+        mCollapsingToolbarLayout.setContentScrimColor(palette.getMutedColor(primary));
+        mCollapsingToolbarLayout.setStatusBarScrimColor(palette.getDarkVibrantColor(primaryDark));
+        mCollapsingToolbarLayout.setExpandedTitleColor(palette.getLightMutedColor(primary));
 
-        tabLayout.setTabTextColors(palette.getLightMutedColor(primaryDark), palette.getDarkVibrantColor(accent));
-        tabLayout.setSelectedTabIndicatorColor(palette.getDarkVibrantColor(primaryDark));
+        mTabLayout.setTabTextColors(palette.getLightMutedColor(primaryDark), palette.getDarkVibrantColor(accent));
+        mTabLayout.setSelectedTabIndicatorColor(palette.getDarkVibrantColor(primaryDark));
+
+        mFloatingActionButton.setBackgroundColor(palette.getDarkVibrantColor(accent));
+        mFloatingActionButton.setRippleColor(palette.getDarkMutedColor(primary));
+
     }
 
 }

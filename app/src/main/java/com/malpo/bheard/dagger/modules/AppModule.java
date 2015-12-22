@@ -1,14 +1,13 @@
 package com.malpo.bheard.dagger.modules;
 
-import android.app.Application;
 import android.content.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 import com.malpo.bheard.networking.lastfm.LastfmInterface;
+import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 import com.malpo.bheard.networking.lastfm.artist.json.ArtistDeserializer;
 import com.malpo.bheard.networking.lastfm.artist.json.ArtistListDeserializer;
 import com.squareup.okhttp.Interceptor;
