@@ -31,7 +31,12 @@ public class ArtistListDeserializer implements JsonDeserializer<List<Artist>>
                 content = content.getAsJsonObject().get("artist").getAsJsonArray();
                 return gson.fromJson(content, type);
             }
-
+        } else{
+            content = je.getAsJsonObject().get("similarartists");
+            if (content != null) {
+                content = content.getAsJsonObject().get("artist").getAsJsonArray();
+                return gson.fromJson(content, type);
+            }
         }
         return null;
     }

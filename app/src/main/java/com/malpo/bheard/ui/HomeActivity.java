@@ -18,7 +18,7 @@ import com.malpo.bheard.R;
 import com.malpo.bheard.eventbus.SearchResultEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.tabs.SampleFragmentPagerAdapter;
+import com.malpo.bheard.adapters.TabFragmentPagerAdapter;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -52,6 +52,8 @@ public class HomeActivity extends AppCompatActivity {
     FloatingActionButton mFloatingActionButton;
 
     @Inject EventBus mBus;
+
+    private TabFragmentPagerAdapter mPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,16 +112,17 @@ public class HomeActivity extends AppCompatActivity {
     public void onEvent(SearchResultEvent event){
         Artist artist = event.artist;
         updateHeader(artist);
-        setupViewPager();
-
+        setupViewPager(artist);
     }
 
-    private void setupViewPager(){
-        mViewPager.setAdapter(new SampleFragmentPagerAdapter(
-                getSupportFragmentManager(),
-                HomeActivity.this));
-
-        mTabLayout.setupWithViewPager(mViewPager);
+    private void setupViewPager(Artist artist){
+        if(mPagerAdapter == null) {
+            mPagerAdapter = new TabFragmentPagerAdapter(getSupportFragmentManager(), this, artist);
+            mViewPager.setAdapter(mPagerAdapter);
+            mTabLayout.setupWithViewPager(mViewPager);
+        } else {
+            mPagerAdapter.updateData(artist);
+        }
     }
 
     private void updateHeader(Artist artist){

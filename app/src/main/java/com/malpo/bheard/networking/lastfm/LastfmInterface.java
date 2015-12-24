@@ -23,4 +23,7 @@ public interface LastfmInterface {
     @GET ("/2.0/")
     Call<List<Artist>> getSearchResults(@QueryMap Map<String, String> filters);
 
+    @GET ("/2.0")
+    Call<List<Artist>> getSimilarArtists(@QueryMap Map<String, String> filters);
+
 }

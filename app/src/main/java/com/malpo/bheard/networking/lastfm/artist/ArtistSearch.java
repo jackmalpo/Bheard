@@ -53,4 +53,12 @@ public class ArtistSearch {
         return lastfmInterface.getInfo(queryMap);
     }
 
+    public Call<List<Artist>> getSimilarArtists(String artist){
+        queryMap.put(ARTIST, artist);
+        queryMap.put(METHOD, "artist.getSimilar");
+        queryMap.put("limit", "30");
+
+        return lastfmInterface.getSimilarArtists(queryMap);
+    }
+
 }

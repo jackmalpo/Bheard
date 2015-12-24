@@ -64,7 +64,7 @@ public class SearchDropdownAdapter extends ArrayAdapter<Artist> {
 
         try {
             holder.textView.setText(thisArtist.getName());
-            String url = thisArtist.getImage().get(3).getText();
+            String url = thisArtist.getListImageUrl();
             if(!url.equals(""))
                 Picasso.with(context).load(url).into(holder.imageView);
         }catch (NullPointerException e){

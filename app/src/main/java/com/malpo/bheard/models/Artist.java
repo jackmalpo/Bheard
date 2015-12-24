@@ -1,11 +1,14 @@
 package com.malpo.bheard.models;
 
+import org.parceler.Parcel;
+
 import java.util.List;
 
 /**
  * Created by Jack on 10/8/15.
  * LastFm Artist Model
  */
+@Parcel(Parcel.Serialization.BEAN)
 public class Artist {
     private String name;
     private String mbid;
@@ -13,10 +16,6 @@ public class Artist {
     private List<ArtistImage> image;
 
     public Artist(){}
-
-    public Artist(String name) {
-        this.name = name;
-    }
 
     public String getName() {
         return name;
@@ -50,11 +49,19 @@ public class Artist {
         this.image = image;
     }
 
+    public String getListImageUrl(){
+        return getImageUrl("large");
+    }
+
     public String getHeaderImageUrl(){
+        return getImageUrl("mega");
+    }
+
+    private String getImageUrl(String which){
         List<ArtistImage> images = this.getImage();
         String url = "";
         for(ArtistImage image: images){
-            if(image.getSize().equals("mega")){
+            if(image.getSize().equals(which)){
                 url = image.getText();
             }
         }
