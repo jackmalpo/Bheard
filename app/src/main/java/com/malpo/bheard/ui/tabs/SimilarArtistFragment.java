@@ -2,11 +2,18 @@ package com.malpo.bheard.ui.tabs;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.malpo.bheard.R;
 import com.malpo.bheard.adapters.SimilarArtistAdapter;
@@ -24,12 +31,15 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 // In this case, the fragment displays simple text based on the page
-public class SimilarArtistFragment extends BaseTabFragment{
+public class SimilarArtistFragment extends BaseTabFragment implements SimilarArtistAdapter.OnArtistSelectedListener{
 
     public static final String ARG_ARTIST = "ARG_ARTIST";
 
     @Bind(R.id.rv)
     RecyclerView mRecyclerView;
+
+    @Bind(R.id.progress)
+    ProgressBar mProgressBar;
 
     private Artist mArtist;
     private SimilarArtistAdapter mSimilarArtistAdapter;
@@ -73,28 +83,26 @@ public class SimilarArtistFragment extends BaseTabFragment{
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        LinearLayoutManager llm = new LinearLayoutManager(view.getContext());
+        GridLayoutManager llm = new GridLayoutManager(view.getContext(), 2);
         mRecyclerView.setLayoutManager(llm);
-
         updateData(mArtist);
     }
 
     @Override
     public void updateData(Artist artist) {
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        mProgressBar.setVisibility(View.VISIBLE);
+
         this.mArtist = artist;
         Call<List<Artist>> call = search.getSimilarArtists(mArtist.getName());
         call.enqueue(new Callback<List<Artist>>() {
 
             @Override
             public void onResponse(Response<List<Artist>> response, Retrofit retrofit) {
-                if(response.body() != null){
-                    if(mSimilarArtistAdapter == null) {
-                        mSimilarArtistAdapter = new SimilarArtistAdapter(response.body(), getContext());
-                        mRecyclerView.setAdapter(mSimilarArtistAdapter);
-                    } else {
-                        mSimilarArtistAdapter.updateData(response.body());
-                    }
+                if(response.body() != null) {
+                    onArtistSearchFinished(response.body());
                 }
+
             }
 
             @Override
@@ -102,5 +110,23 @@ public class SimilarArtistFragment extends BaseTabFragment{
 
             }
         });
+    }
+
+    private void onArtistSearchFinished(List<Artist> artists){
+        if(mSimilarArtistAdapter == null) {
+            mSimilarArtistAdapter = new SimilarArtistAdapter(artists, getContext());
+            mSimilarArtistAdapter.setOnArtistSelectedListener(this);
+            mRecyclerView.setAdapter(mSimilarArtistAdapter);
+        } else {
+            mSimilarArtistAdapter.updateData(artists);
+        }
+
+        mProgressBar.setVisibility(View.INVISIBLE);
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onArtistSelected(Artist artist) {
+        Toast.makeText(getContext(), artist.getName(), Toast.LENGTH_SHORT).show();
     }
 }

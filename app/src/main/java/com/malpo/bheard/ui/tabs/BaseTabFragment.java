@@ -10,12 +10,17 @@ import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 
 import javax.inject.Inject;
 
+import de.greenrobot.event.EventBus;
+
 /**
  * Created by Jack on 12/22/15.
  */
 public abstract class BaseTabFragment extends Fragment {
 
     @Inject ArtistSearch search;
+    @Inject EventBus bus;
+
+    //TODO Refactor EventBus posting to better handle RecyclerView clicks.
 
     public abstract CharSequence getName();
     public abstract void updateData(Artist artist);

@@ -7,10 +7,10 @@ import com.malpo.bheard.models.Artist;
  * Event emmitted on new artist found.
  * @see com.malpo.bheard.ui.SearchFragment
  */
-public class SearchResultEvent {
+public class SearchFinishedEvent {
     public final Artist artist;
 
-    public SearchResultEvent(Artist artist) {
+    public SearchFinishedEvent(Artist artist) {
         this.artist = artist;
     }
 }

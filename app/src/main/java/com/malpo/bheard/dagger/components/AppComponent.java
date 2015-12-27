@@ -4,6 +4,7 @@ import com.malpo.bheard.dagger.modules.AppModule;
 import com.malpo.bheard.ui.tabs.BaseTabFragment;
 import com.malpo.bheard.ui.HomeActivity;
 import com.malpo.bheard.ui.SearchFragment;
+import com.malpo.bheard.ui.tabs.SimilarArtistFragment;
 
 import javax.inject.Singleton;
 

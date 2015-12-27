@@ -2,10 +2,8 @@ package com.malpo.bheard.ui;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +16,7 @@ import android.widget.ProgressBar;
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
 import com.malpo.bheard.adapters.SearchDropdownAdapter;
-import com.malpo.bheard.eventbus.SearchResultEvent;
+import com.malpo.bheard.eventbus.SearchFinishedEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
@@ -46,13 +44,13 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     @Bind(R.id.search_box) AutoCompleteTextView searchBox;
 
     @Bind(R.id.search_progress) ProgressBar progressBar;
-    @Inject ArtistSearch search;
+    @Inject ArtistSearch mSearch;
 
-    @Inject EventBus bus;
+    @Inject EventBus mBus;
 
-    private List<Artist> searchText;
-    private Call<List<Artist>> searchCall;
-    private SearchDropdownAdapter searchAdapter;
+    private List<Artist> mSearchText;
+    private Call<List<Artist>> mSearchCall;
+    private SearchDropdownAdapter mSearchAdapter;
 
     @Nullable
     @Override
@@ -75,8 +73,19 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        if(!mBus.isRegistered(this))
+            mBus.register(this);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+
+        if(!mBus.isRegistered(this))
+            mBus.register(this);
+
         if(searchBox != null){
             if(!searchBox.getText().toString().equals("")) {
                 searchBox.setText("");
@@ -86,20 +95,41 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         setupAdapter();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mBus.isRegistered(this))
+            mBus.unregister(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(mBus.isRegistered(this))
+            mBus.unregister(this);
+    }
+
+    private void setupAdapter(){
+        mSearchText = new ArrayList<>();
+        mSearchAdapter = new SearchDropdownAdapter(getActivity(), R.layout.search_dropdown_item, mSearchText);
+        searchBox.setOnItemClickListener(this);
+        searchBox.setAdapter(mSearchAdapter);
+    }
+
     @OnTextChanged(R.id.search_box) void onTextChanged(CharSequence s){
         startDropDownSearch(s.toString());
     }
 
     private void startDropDownSearch(String artist){
-        if(searchCall != null){
-            searchCall.cancel();
+        if(mSearchCall != null){
+            mSearchCall.cancel();
         }
-        searchCall = search.getSearchResults(artist);
-        searchCall.enqueue(new Callback<List<Artist>>() {
+        mSearchCall = mSearch.getSearchResults(artist);
+        mSearchCall.enqueue(new Callback<List<Artist>>() {
             @Override
             public void onResponse(Response<List<Artist>> response, Retrofit retrofit) {
                 if(response.body() != null) {
-                    updateAdapter(response.body());
+                    updateDropdownAdapter(response.body());
                 }
             }
 
@@ -110,11 +140,17 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         });
     }
 
+    private void updateDropdownAdapter(List<Artist> response){
+        mSearchAdapter.updateData(response);
+    }
 
     @OnEditorAction(R.id.search_box) boolean onEditorAction(int actionId){
         if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
             String artist = searchBox.getText().toString();
-            searchArtist(artist);
+
+            //post EventBus started event
+            mBus.post(new SearchStartedEvent(artist));
+
             return false;
         }
         return true;
@@ -134,67 +170,29 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
         }
     }
 
-    private void setupAdapter(){
-        searchText = new ArrayList<>();
-        searchAdapter = new SearchDropdownAdapter(getActivity(), R.layout.search_dropdown_item, searchText);
-        searchBox.setOnItemClickListener(this);
-        searchBox.setAdapter(searchAdapter);
+
+    /**
+     * Called when new artist mSearch has been started.
+     * @param event
+     */
+    public void onEvent(SearchStartedEvent event){
+
+            hideKeyboard();
+
+            searchBox.setText("");
+
+            //turn on progress bar
+            updateProgressBar(true);
     }
 
-    private void updateAdapter(List<Artist> response){
-        searchAdapter.updateData(response);
+    /**
+     * Called when new artist has been found.
+     * @param event
+     */
+    public void onEvent(SearchFinishedEvent event){
+        updateProgressBar(false);
     }
 
-    private void searchArtist(String artist){
-        if(!artist.equals("")) {
-
-            artistSearchStarted();
-
-            //get artist info from last.fm
-            Call<Artist> call = search.getArtistInfo(artist);
-            call.enqueue(new Callback<Artist>() {
-                @Override
-                public void onResponse(Response<Artist> response, Retrofit retrofit) {
-                    artistSearchFinished(response.body());
-                }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    Log.e("SEARCH_ERROR", "There was an error searching.", t);
-                }
-            });
-        }
-    }
-
-    private void artistSearchStarted(){
-
-        hideKeyboard();
-
-        //post EventBus started event
-        bus.post(new SearchStartedEvent());
-
-        searchBox.setText("");
-
-        //turn on progress bar
-        updateProgressBar(true);
-
-    }
-
-    private void artistSearchFinished(Artist artist){
-
-        //post EventBus result event
-        bus.post(new SearchResultEvent(artist));
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                searchBox.setText("");
-                updateProgressBar(false);
-            }
-        }, 900);
-
-    }
 
     private void updateProgressBar(boolean visible){
         try {
@@ -212,15 +210,19 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        artistSearchStarted();
         Artist artist = (Artist) parent.getItemAtPosition(position);
-        artistSearchFinished(artist);
+
+        //post EventBus started event
+        mBus.post(new SearchStartedEvent(artist));
     }
 
     public void searchIfPossible(){
         if(searchBox != null) {
             if (searchBox.getVisibility() == View.VISIBLE && !searchBox.getText().toString().equals("")) {
-                searchArtist(searchBox.getText().toString());
+
+                //post EventBus started event
+                mBus.post(new SearchStartedEvent(searchBox.getText().toString()));
+
             } else {
                 searchBox.setText("");
                 searchBox.setVisibility(View.VISIBLE);

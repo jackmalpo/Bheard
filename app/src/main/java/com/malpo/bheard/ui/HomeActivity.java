@@ -11,14 +11,18 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
-import com.malpo.bheard.eventbus.SearchResultEvent;
+import com.malpo.bheard.eventbus.SearchFinishedEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.adapters.TabFragmentPagerAdapter;
+import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -28,10 +32,13 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
+import retrofit.Call;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private static final String SEARCH_TAG = "search";
+    private static final String SEARCH_TAG = "mSearch";
 
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
@@ -51,7 +58,12 @@ public class HomeActivity extends AppCompatActivity {
     @Bind(R.id.fab)
     FloatingActionButton mFloatingActionButton;
 
+    @Bind(R.id.tab_wrapper)
+    LinearLayout mTabWrapper;
+
     @Inject EventBus mBus;
+
+    @Inject ArtistSearch mSearch;
 
     private TabFragmentPagerAdapter mPagerAdapter;
 
@@ -98,20 +110,44 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Called when new artist search has been started.
+     * Called when new artist mSearch has been started.
      * @param event
      */
     public void onEvent(SearchStartedEvent event){
+        mTabWrapper.setVisibility(View.INVISIBLE);
 
+        Artist artist = event.artist;
+        if(artist != null){
+            updateHeader(artist);
+        } else {
+            String artistName = event.artistName;
+
+            //get artist info from last.fm
+            Call<Artist> call = mSearch.getArtistInfo(artistName);
+            call.enqueue(new retrofit.Callback<Artist>() {
+                @Override
+                public void onResponse(Response<Artist> response, Retrofit retrofit) {
+                    Artist artist = response.body();
+                    if (artist != null)
+                        updateHeader(artist);
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    Log.e("SEARCH_ERROR", "There was an error searching.", t);
+                }
+            });
+        }
     }
 
     /**
      * Called when new artist has been found.
      * @param event
      */
-    public void onEvent(SearchResultEvent event){
+    public void onEvent(SearchFinishedEvent event){
+        mTabWrapper.setVisibility(View.VISIBLE);
+
         Artist artist = event.artist;
-        updateHeader(artist);
         setupViewPager(artist);
     }
 
@@ -125,7 +161,7 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void updateHeader(Artist artist){
+    private void updateHeader(final Artist artist){
         try {
             String url = artist.getHeaderImageUrl();
             String name = artist.getName();
@@ -137,6 +173,7 @@ public class HomeActivity extends AppCompatActivity {
                     Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
                         @Override
                         public void onGenerated(Palette palette) {
+                            mBus.post(new SearchFinishedEvent(artist));
                             updateColors(palette);
                         }
                     });

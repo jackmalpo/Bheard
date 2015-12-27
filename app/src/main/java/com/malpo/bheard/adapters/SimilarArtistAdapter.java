@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.malpo.bheard.R;
 import com.malpo.bheard.models.Artist;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by Jack on 12/20/15.
@@ -25,10 +27,15 @@ public class SimilarArtistAdapter extends RecyclerView.Adapter<SimilarArtistAdap
 
     private List<Artist> artists;
     private Context context;
+    private OnArtistSelectedListener listener;
 
     public SimilarArtistAdapter(List<Artist> artists, Context context){
         this.artists = artists;
         this.context = context;
+    }
+
+    public void setOnArtistSelectedListener(OnArtistSelectedListener listener){
+        this.listener = listener;
     }
 
     public void updateData(List<Artist> artists){
@@ -44,8 +51,7 @@ public class SimilarArtistAdapter extends RecyclerView.Adapter<SimilarArtistAdap
     @Override
     public PersonViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.artist_recycler_view, viewGroup, false);
-        PersonViewHolder pvh = new PersonViewHolder(v);
-        return pvh;
+        return new PersonViewHolder(v, listener);
     }
 
     @Override
@@ -55,19 +61,38 @@ public class SimilarArtistAdapter extends RecyclerView.Adapter<SimilarArtistAdap
 
     @Override
     public void onBindViewHolder(PersonViewHolder personViewHolder, int i) {
-        personViewHolder.personName.setText(artists.get(i).getName());
-        Picasso.with(context).load(artists.get(i).getListImageUrl()).fit().centerCrop().into(personViewHolder.personPhoto);
+        Artist artist = artists.get(i);
+        personViewHolder.bindArtist(artist, context);
     }
 
-    public static class PersonViewHolder extends RecyclerView.ViewHolder {
+    public static class PersonViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         @Bind(R.id.cv) CardView cv;
         @Bind(R.id.person_name) TextView personName;
         @Bind(R.id.person_photo) ImageView personPhoto;
 
-        PersonViewHolder(View itemView) {
+        private Artist artist;
+        private OnArtistSelectedListener listener;
+
+        PersonViewHolder(View itemView, OnArtistSelectedListener listener) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            this.listener = listener;
         }
+
+        public void bindArtist(Artist artist, Context context){
+            this.artist = artist;
+            personName.setText(artist.getName());
+            Picasso.with(context).load(artist.getListImageUrl()).fit().centerCrop().into(personPhoto);
+        }
+
+        @OnClick(R.id.cv)
+        public void onClick(View v){
+            listener.onArtistSelected(artist);
+        }
+    }
+
+    public interface OnArtistSelectedListener{
+        void onArtistSelected(Artist artist);
     }
 
 }
