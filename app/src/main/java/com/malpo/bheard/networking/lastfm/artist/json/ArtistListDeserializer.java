@@ -23,7 +23,7 @@ public class ArtistListDeserializer implements JsonDeserializer<List<Artist>>
             throws JsonParseException {
         Gson gson = new Gson();
 
-        //ArtistSearch
+        //LastfmSearch
         JsonElement content = je.getAsJsonObject().get("results");
         if (content != null) {
             content = content.getAsJsonObject().get("artistmatches");

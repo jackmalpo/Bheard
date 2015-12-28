@@ -19,7 +19,7 @@ import com.malpo.bheard.adapters.SearchDropdownAdapter;
 import com.malpo.bheard.eventbus.SearchFinishedEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
+import com.malpo.bheard.networking.lastfm.artist.LastfmSearch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,8 @@ public class SearchFragment extends Fragment implements AdapterView.OnItemClickL
     @Bind(R.id.search_box) AutoCompleteTextView searchBox;
 
     @Bind(R.id.search_progress) ProgressBar progressBar;
-    @Inject ArtistSearch mSearch;
+    @Inject
+    LastfmSearch mSearch;
 
     @Inject EventBus mBus;
 

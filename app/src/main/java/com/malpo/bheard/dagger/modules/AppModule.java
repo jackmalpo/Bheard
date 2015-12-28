@@ -4,10 +4,13 @@ import android.content.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.malpo.bheard.MyApplication;
+import com.malpo.bheard.models.Album;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.networking.lastfm.LastfmInterface;
-import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
+import com.malpo.bheard.networking.lastfm.artist.LastfmSearch;
+import com.malpo.bheard.networking.lastfm.artist.json.AlbumListDeserializer;
 import com.malpo.bheard.networking.lastfm.artist.json.ArtistDeserializer;
 import com.malpo.bheard.networking.lastfm.artist.json.ArtistListDeserializer;
 import com.squareup.okhttp.Interceptor;
@@ -16,8 +19,10 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -82,8 +87,10 @@ public class AppModule {
     @Provides
     @Singleton
     Gson providesGson(){
-        return new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistDeserializer())
-                .registerTypeAdapter(List.class, new ArtistListDeserializer())
+        return new GsonBuilder()
+                .registerTypeAdapter(Artist.class, new ArtistDeserializer())
+                .registerTypeAdapter(new TypeToken<List<Artist>>(){}.getType(), new ArtistListDeserializer())
+                .registerTypeAdapter(new TypeToken<List<Album>>(){}.getType(), new AlbumListDeserializer())
                 .create();
     }
 
@@ -106,8 +113,8 @@ public class AppModule {
 
     @Provides
     @Singleton
-    ArtistSearch providesArtistSearch(LastfmInterface lastfmInterface, Retrofit retrofit){
-        return new ArtistSearch(lastfmInterface, retrofit);
+    LastfmSearch providesArtistSearch(LastfmInterface lastfmInterface, Retrofit retrofit){
+        return new LastfmSearch(lastfmInterface, retrofit);
     }
 
     @Provides

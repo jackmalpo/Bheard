@@ -3,6 +3,7 @@ package com.malpo.bheard.ui.tabs;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.malpo.bheard.R;
-import com.malpo.bheard.adapters.SimilarArtistAdapter;
-import com.malpo.bheard.eventbus.SearchStartedEvent;
+import com.malpo.bheard.adapters.AlbumsAdapter;
+import com.malpo.bheard.models.Album;
 import com.malpo.bheard.models.Artist;
 
 import org.parceler.Parcels;
@@ -26,7 +27,7 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 // In this case, the fragment displays simple text based on the page
-public class SimilarArtistFragment extends BaseTabFragment implements SimilarArtistAdapter.OnArtistSelectedListener{
+public class AlbumsFragment extends BaseTabFragment implements AlbumsAdapter.OnAlbumSelectedListener{
 
     public static final String ARG_ARTIST = "ARG_ARTIST";
 
@@ -37,17 +38,17 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
     ProgressBar mProgressBar;
 
     private Artist mArtist;
-    private SimilarArtistAdapter mSimilarArtistAdapter;
+    private AlbumsAdapter mAlbumsAdapter;
 
-    public static SimilarArtistFragment newInstance(Artist artist) {
+    public static AlbumsFragment newInstance(Artist artist) {
         Bundle args = new Bundle();
         args.putParcelable(ARG_ARTIST, Parcels.wrap(artist));
-        SimilarArtistFragment fragment = new SimilarArtistFragment();
+        AlbumsFragment fragment = new AlbumsFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    public SimilarArtistFragment(){}
+    public AlbumsFragment(){}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,7 +58,7 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
 
     @Override
     public CharSequence getName() {
-        return "Similar";
+        return "Albums";
     }
 
     @Override
@@ -77,8 +78,8 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        GridLayoutManager glm = new GridLayoutManager(view.getContext(), 2);
-        mRecyclerView.setLayoutManager(glm);
+        LinearLayoutManager llm = new LinearLayoutManager(view.getContext());
+        mRecyclerView.setLayoutManager(llm);
         updateData(mArtist);
     }
 
@@ -88,15 +89,13 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
         mProgressBar.setVisibility(View.VISIBLE);
 
         this.mArtist = artist;
-        Call<List<Artist>> call = search.getSimilarArtists(mArtist.getName());
-        call.enqueue(new Callback<List<Artist>>() {
 
+        Call<List<Album>> call = search.getAlbums(mArtist.getName());
+        call.enqueue(new Callback<List<Album>>() {
             @Override
-            public void onResponse(Response<List<Artist>> response, Retrofit retrofit) {
-                if(response.body() != null) {
-                    onArtistSearchFinished(response.body());
-                }
-
+            public void onResponse(Response<List<Album>> response, Retrofit retrofit) {
+                List<Album> albums = response.body();
+                onArtistSearchFinished(albums);
             }
 
             @Override
@@ -106,13 +105,13 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
         });
     }
 
-    private void onArtistSearchFinished(List<Artist> artists){
-        if(mSimilarArtistAdapter == null) {
-            mSimilarArtistAdapter = new SimilarArtistAdapter(artists, getContext());
-            mSimilarArtistAdapter.setOnArtistSelectedListener(this);
-            mRecyclerView.setAdapter(mSimilarArtistAdapter);
+    private void onArtistSearchFinished(List<Album> albums){
+        if(mAlbumsAdapter == null) {
+            mAlbumsAdapter = new AlbumsAdapter(albums, getContext());
+            mAlbumsAdapter.setOnAlbumSelectedListener(this);
+            mRecyclerView.setAdapter(mAlbumsAdapter);
         } else {
-            mSimilarArtistAdapter.updateData(artists);
+            mAlbumsAdapter.updateData(albums);
         }
 
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -120,8 +119,7 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
     }
 
     @Override
-    public void onArtistSelected(Artist artist) {
-        bus.post(new SearchStartedEvent(artist));
-        mRecyclerView.scrollToPosition(0);
+    public void onAlbumSelected(Album album) {
+
     }
 }

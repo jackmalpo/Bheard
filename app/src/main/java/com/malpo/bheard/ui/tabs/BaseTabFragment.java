@@ -6,7 +6,7 @@ import android.support.v4.app.Fragment;
 
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
+import com.malpo.bheard.networking.lastfm.artist.LastfmSearch;
 
 import javax.inject.Inject;
 
@@ -17,7 +17,8 @@ import de.greenrobot.event.EventBus;
  */
 public abstract class BaseTabFragment extends Fragment {
 
-    @Inject ArtistSearch search;
+    @Inject
+    LastfmSearch search;
     @Inject EventBus bus;
 
     public abstract CharSequence getName();

@@ -1,5 +1,6 @@
 package com.malpo.bheard.networking.lastfm.artist;
 
+import com.malpo.bheard.models.Album;
 import com.malpo.bheard.models.Artist;
 import com.malpo.bheard.networking.lastfm.LastfmInterface;
 
@@ -15,7 +16,7 @@ import retrofit.Retrofit;
  * Handles Retrofit Calls to LastFmInterface
  * @see LastfmInterface
  */
-public class ArtistSearch {
+public class LastfmSearch {
     private static final String METHOD = "method";
     private static final String ARTIST = "artist";
 
@@ -24,7 +25,7 @@ public class ArtistSearch {
     private LastfmInterface lastfmInterface;
     private Retrofit retrofit;
 
-    public ArtistSearch(LastfmInterface lastfmInterface, Retrofit retrofit){
+    public LastfmSearch(LastfmInterface lastfmInterface, Retrofit retrofit){
         this.lastfmInterface = lastfmInterface;
         this.retrofit = retrofit;
         queryMap = new HashMap<>();
@@ -59,6 +60,13 @@ public class ArtistSearch {
         queryMap.put("limit", "30");
 
         return lastfmInterface.getSimilarArtists(queryMap);
+    }
+
+    public Call<List<Album>> getAlbums(String artist){
+        queryMap.put(ARTIST, artist);
+        queryMap.put(METHOD, "artist.getTopAlbums");
+        queryMap.put("limit", "50");
+        return lastfmInterface.getAlbums(queryMap);
     }
 
 }

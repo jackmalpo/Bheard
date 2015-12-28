@@ -23,7 +23,7 @@ import com.malpo.bheard.adapters.TabFragmentPagerAdapter;
 import com.malpo.bheard.eventbus.SearchFinishedEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
+import com.malpo.bheard.networking.lastfm.artist.LastfmSearch;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -69,7 +69,8 @@ public class HomeActivity extends AppCompatActivity {
 
     @Inject EventBus mBus;
 
-    @Inject ArtistSearch mSearch;
+    @Inject
+    LastfmSearch mSearch;
 
     private TabFragmentPagerAdapter mPagerAdapter;
     private Stack<Artist> previous;
@@ -163,7 +164,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setupViewPager(Artist artist){
         if(mPagerAdapter == null) {
-            mPagerAdapter = new TabFragmentPagerAdapter(getSupportFragmentManager(), this, artist);
+            mPagerAdapter = new TabFragmentPagerAdapter(getSupportFragmentManager(), artist);
             mViewPager.setAdapter(mPagerAdapter);
             mTabLayout.setupWithViewPager(mViewPager);
         } else {

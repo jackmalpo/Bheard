@@ -6,12 +6,12 @@ import org.parceler.Parcel;
 
 /**
  * Created by Jack on 10/12/15.
- * LastFm ArtistImage Model
+ * LastFm Image Model
  */
 @Parcel(Parcel.Serialization.BEAN)
-public class ArtistImage {
+public class Image {
 
-    public ArtistImage(){}
+    public Image(){}
 
     @SerializedName("#text")
     private String text;
