@@ -27,6 +27,8 @@ import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.Stack;
+
 import javax.inject.Inject;
 
 import butterknife.Bind;
@@ -70,6 +72,7 @@ public class HomeActivity extends AppCompatActivity {
     @Inject ArtistSearch mSearch;
 
     private TabFragmentPagerAdapter mPagerAdapter;
+    private Stack<Artist> previous;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +91,8 @@ public class HomeActivity extends AppCompatActivity {
         mCollapsingToolbarLayout.setTitle("");
         mCollapsingToolbarLayout.setContentScrimColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         mCollapsingToolbarLayout.setStatusBarScrimColor(ContextCompat.getColor(this, R.color.colorAccent));
+
+        previous = new Stack<>();
 
     }
 
@@ -118,8 +123,7 @@ public class HomeActivity extends AppCompatActivity {
      * @param event
      */
     public void onEvent(SearchStartedEvent event){
-        mAppBar.setExpanded(true, true);
-
+        mAppBar.setExpanded(true, false);
         mTabWrapper.setVisibility(View.INVISIBLE);
 
         Artist artist = event.artist;
@@ -152,8 +156,8 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void onEvent(SearchFinishedEvent event){
         mTabWrapper.setVisibility(View.VISIBLE);
-
         Artist artist = event.artist;
+        previous.push(artist);
         setupViewPager(artist);
     }
 
@@ -216,4 +220,15 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        if(previous.size() > 1) {
+            previous.pop();
+            if(previous.peek() != null) {
+                mBus.post(new SearchStartedEvent(previous.pop()));
+            }
+        } else {
+            super.onBackPressed();
+        }
+    }
 }

@@ -45,7 +45,6 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
 
     private Artist mArtist;
     private SimilarArtistAdapter mSimilarArtistAdapter;
-    private GridLayoutManager glm;
 
     public static SimilarArtistFragment newInstance(Artist artist) {
         Bundle args = new Bundle();
@@ -85,8 +84,7 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        glm = new GridLayoutManager(view.getContext(), 2);
+        GridLayoutManager glm = new GridLayoutManager(view.getContext(), 2);
         mRecyclerView.setLayoutManager(glm);
         updateData(mArtist);
     }
@@ -130,7 +128,7 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
 
     @Override
     public void onArtistSelected(Artist artist) {
-//        Toast.makeText(getContext(), artist.getName(), Toast.LENGTH_SHORT).show();
         bus.post(new SearchStartedEvent(artist));
+        mRecyclerView.scrollToPosition(0);
     }
 }
