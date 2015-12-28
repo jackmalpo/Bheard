@@ -3,6 +3,7 @@ package com.malpo.bheard.ui;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -18,10 +19,10 @@ import android.widget.LinearLayout;
 
 import com.malpo.bheard.MyApplication;
 import com.malpo.bheard.R;
+import com.malpo.bheard.adapters.TabFragmentPagerAdapter;
 import com.malpo.bheard.eventbus.SearchFinishedEvent;
 import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
-import com.malpo.bheard.adapters.TabFragmentPagerAdapter;
 import com.malpo.bheard.networking.lastfm.artist.ArtistSearch;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -48,6 +49,9 @@ public class HomeActivity extends AppCompatActivity {
 
     @Bind(R.id.toolbar_layout)
     CollapsingToolbarLayout mCollapsingToolbarLayout;
+
+    @Bind(R.id.app_bar)
+    AppBarLayout mAppBar;
 
     @Bind(R.id.viewpager)
     ViewPager mViewPager;
@@ -114,6 +118,8 @@ public class HomeActivity extends AppCompatActivity {
      * @param event
      */
     public void onEvent(SearchStartedEvent event){
+        mAppBar.setExpanded(true, true);
+
         mTabWrapper.setVisibility(View.INVISIBLE);
 
         Artist artist = event.artist;

@@ -20,8 +20,6 @@ public abstract class BaseTabFragment extends Fragment {
     @Inject ArtistSearch search;
     @Inject EventBus bus;
 
-    //TODO Refactor EventBus posting to better handle RecyclerView clicks.
-
     public abstract CharSequence getName();
     public abstract void updateData(Artist artist);
 

@@ -6,6 +6,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import com.malpo.bheard.R;
 import com.malpo.bheard.adapters.SimilarArtistAdapter;
+import com.malpo.bheard.eventbus.SearchStartedEvent;
 import com.malpo.bheard.models.Artist;
 
 import org.parceler.Parcels;
@@ -43,6 +45,7 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
 
     private Artist mArtist;
     private SimilarArtistAdapter mSimilarArtistAdapter;
+    private GridLayoutManager glm;
 
     public static SimilarArtistFragment newInstance(Artist artist) {
         Bundle args = new Bundle();
@@ -83,8 +86,8 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        GridLayoutManager llm = new GridLayoutManager(view.getContext(), 2);
-        mRecyclerView.setLayoutManager(llm);
+        glm = new GridLayoutManager(view.getContext(), 2);
+        mRecyclerView.setLayoutManager(glm);
         updateData(mArtist);
     }
 
@@ -127,6 +130,7 @@ public class SimilarArtistFragment extends BaseTabFragment implements SimilarArt
 
     @Override
     public void onArtistSelected(Artist artist) {
-        Toast.makeText(getContext(), artist.getName(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getContext(), artist.getName(), Toast.LENGTH_SHORT).show();
+        bus.post(new SearchStartedEvent(artist));
     }
 }
